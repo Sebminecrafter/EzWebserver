@@ -68,14 +68,8 @@ public final class EzWebserver extends JavaPlugin {
         // Config
         config.options().copyDefaults(true);
 
-        // Variables for file server
-        InetSocketAddress addr = new InetSocketAddress(
-                Objects.requireNonNull(config.getString("hostname")),
-                config.getInt("port")
-        );
         dir = dir.toAbsolutePath();
 
-        // Create file server
         restartServer();
         logger.log(Level.INFO, "EzWebserver has been started.");
 

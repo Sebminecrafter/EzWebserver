@@ -19,10 +19,6 @@ public class PlaceholderProcessor {
         papiEnabled = Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null;
     }
 
-    public static boolean isPapiEnabled() {
-        return papiEnabled;
-    }
-
     public static String process(String content, OfflinePlayer player) {
         // Apply built-in placeholders first
         for (Map.Entry<String, String> entry : getPlaceholders().entrySet()) {
