@@ -25,7 +25,7 @@ public class PlaceholderProcessor {
             content = content.replace("{{" + entry.getKey() + "}}", entry.getValue());
         }
 
-        if (papiEnabled && player != null) {
+        if (papiEnabled) {
             content = PapiHook.apply(player, content);
         }
 
