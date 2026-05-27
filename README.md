@@ -30,7 +30,7 @@ The built-in placeholders are:
 
 - `player_count` - Online players
 - `max_players` - Max online players
-- `server_name` - Name of the Server, from `server.properties`
+- `server_name` - Server brand (e.g. Paper, Bukkit, Spigot)
 - `server_version` - Game version of the server
 - `motd` - Message of the Day, from `server.properties`
 - `player_list` - The full player list
