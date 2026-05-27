@@ -1,0 +1,7 @@
+# Config for EzWebServer
+
+# Hostname of the server (like example.com or 0.0.0.0)
+hostname: ""
+
+# Port for the server (0-65535), default is 80
+port: 80

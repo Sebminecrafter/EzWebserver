@@ -1,0 +1,26 @@
+name: EzWebserver
+description: $description
+prefix: Web Server
+version: '${version}'
+
+main: io.github.sebminecrafter.ezWebserver.EzWebserver
+api-version: '26.1'
+load: STARTUP
+
+authors: [ Sebminecrafter ]
+website: modrinth.com/user/Sebminecrafter
+
+softdepend:
+  - PlaceholderAPI
+
+permissions:
+  ezwebserver.command:
+    description: "Permission to start, stop, and reload EzWebServer"
+
+commands:
+  ezwebserver:
+    description: "Start, stop, or reload EzWebServer"
+    aliases: ["ezweb", "webserver", "ews"]
+    permission: ezwebserver.command
+    permission-message: "Why would you try to do that?"
+    usage: "Usage /<command> [start|stop|reload]"
