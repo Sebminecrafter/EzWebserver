@@ -22,7 +22,8 @@ You can now edit the `config.yml` or the files in `plugins/EzWebserver/public/`
 EzWebserver supports PlaceholderAPI,
 and has built-in placeholders,
 all of which can be used in content to be served by EzWebserver.
-Simply add double curly braces around the placeholder id, like this: `{{PLACEHOLDER}}`
+For built-in placeholders, surround them with curly braces. (e.g. `{{player_count}}`)
+PlaceholderAPI placeholders are surrounded by percent symbols, like normal. (e.g. `%players_online%`)
 
 ### Built-in placeholders
 
