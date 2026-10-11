@@ -4,11 +4,11 @@ prefix: Web Server
 version: '${version}'
 
 main: io.github.sebminecrafter.ezWebserver.EzWebserver
-api-version: '26.1'
+api-version: '1.21'
 load: STARTUP
 
 authors: [ Sebminecrafter ]
-website: modrinth.com/user/Sebminecrafter
+website: https://modrinth.com/user/Sebminecrafter
 
 softdepend:
   - PlaceholderAPI
