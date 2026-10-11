@@ -1,13 +1,17 @@
 package io.github.sebminecrafter.ezWebserver;
 
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
+import io.undertow.server.HttpHandler;
+import io.undertow.server.HttpServerExchange;
+import io.undertow.util.Headers;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.entity.Player;
 
 import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.file.*;
+import java.nio.ByteBuffer;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -31,14 +35,26 @@ public class FileRequestHandler implements HttpHandler {
     }
 
     @Override
-    public void handle(HttpExchange exchange) throws IOException {
-        String uriPath = exchange.getRequestURI().getPath();
+    public void handleRequest(HttpServerExchange exchange) throws IOException {
+        // Make sure it doesnt block
+        if (exchange.isInIoThread()) {
+            exchange.dispatch(this);
+            return;
+        }
+
+        String uriPath = exchange.getRequestPath();
 
         if (uriPath.equals("/")) {
             uriPath = "/index.html";
         }
 
-        Path filePath = rootDir.resolve(uriPath.substring(1)).normalize();
+        Path filePath;
+        try {
+            filePath = rootDir.resolve(uriPath.substring(1)).normalize();
+        } catch (InvalidPathException e) {
+            sendError(exchange, 400, "Bad Request");
+            return;
+        }
         if (!filePath.startsWith(rootDir)) {
             sendError(exchange, 403, "Forbidden");
             return;
@@ -54,7 +70,7 @@ public class FileRequestHandler implements HttpHandler {
 
         if (TEXT_EXTENSIONS.contains(extension)) {
             // Resolve player from query param if provided
-            OfflinePlayer player = resolvePlayer(exchange.getRequestURI().getQuery());
+            OfflinePlayer player = resolvePlayer(exchange.getQueryString());
 
             String content = Files.readString(filePath);
             content = PlaceholderProcessor.process(content, player);
@@ -64,19 +80,17 @@ public class FileRequestHandler implements HttpHandler {
         }
 
         String contentType = getContentType(extension);
-        exchange.getResponseHeaders().set("Content-Type", contentType);
-        exchange.sendResponseHeaders(200, responseBytes.length);
+        exchange.setStatusCode(200);
+        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, contentType);
+        exchange.setResponseContentLength(responseBytes.length);
+        exchange.getResponseSender().send(ByteBuffer.wrap(responseBytes));
 
-        try (OutputStream os = exchange.getResponseBody()) {
-            os.write(responseBytes);
-        }
-
-        logger.log(Level.INFO, exchange.getRemoteAddress() + " GET " + uriPath + " 200");
+        logger.log(Level.INFO, exchange.getSourceAddress() + " GET " + uriPath + " 200");
     }
 
     /**
      * Parses the query string for a "player=" parameter, sanitizes it,
-     * and returns the matching OfflinePlayer — or null if absent/invalid.
+     * and returns the OfflinePlayer or null if missing or wrong
      */
     private OfflinePlayer resolvePlayer(String query) {
         if (query == null || query.isBlank()) return null;
@@ -94,30 +108,22 @@ public class FileRequestHandler implements HttpHandler {
 
                 // Prefer an online player (has full profile loaded)
                 // Falls back to OfflinePlayer for PAPI placeholders that support it
-                var online = Bukkit.getPlayerExact(username);
+                Player online = Bukkit.getPlayerExact(username);
                 if (online != null) return online;
 
-                // getOfflinePlayer() never returns null but may have no data
-                // if the player has never joined — PAPI handles that gracefully
                 OfflinePlayer offline = Bukkit.getOfflinePlayer(username);
-                if (!offline.hasPlayedBefore()) {
-                    logger.log(Level.WARNING, "Player param \"" + username + "\" has never joined.");
-                    return null;
-                }
 
-                return offline;
+                return offline.hasPlayedBefore() ? offline : null;
             }
         }
 
         return null;
     }
 
-    private void sendError(HttpExchange exchange, int code, String message) throws IOException {
-        byte[] bytes = message.getBytes();
-        exchange.sendResponseHeaders(code, bytes.length);
-        try (OutputStream os = exchange.getResponseBody()) {
-            os.write(bytes);
-        }
+    private void sendError(HttpServerExchange exchange, int code, String message) {
+        exchange.setStatusCode(code);
+        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/plain; charset=UTF-8");
+        exchange.getResponseSender().send(message);
     }
 
     private String getExtension(String filename) {

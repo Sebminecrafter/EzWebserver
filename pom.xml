@@ -13,6 +13,7 @@
 
     <properties>
         <java.version>25</java.version>
+        <undertow.version>2.4.4.Final</undertow.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -31,13 +32,59 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.5.3</version>
+                <version>3.6.2</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
                         <goals>
                             <goal>shade</goal>
                         </goals>
+                        <configuration>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                        <exclude>module-info.class</exclude>
+                                        <exclude>META-INF/versions/*/module-info.class</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                            <relocations>
+                                <relocation>
+                                    <pattern>io.undertow</pattern>
+                                    <shadedPattern>io.github.sebminecrafter.ezWebserver.shaded.undertow</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.xnio</pattern>
+                                    <shadedPattern>io.github.sebminecrafter.ezWebserver.shaded.xnio</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.jboss</pattern>
+                                    <shadedPattern>io.github.sebminecrafter.ezWebserver.shaded.jboss</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.wildfly</pattern>
+                                    <shadedPattern>io.github.sebminecrafter.ezWebserver.shaded.wildfly</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>io.smallrye</pattern>
+                                    <shadedPattern>io.github.sebminecrafter.ezWebserver.shaded.smallrye</shadedPattern>
+                                </relocation>
+                            </relocations>
+                            <transformers>
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <manifestEntries>
+                                        <Multi-Release>true</Multi-Release>
+                                    </manifestEntries>
+                                </transformer>
+                            </transformers>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
@@ -63,9 +110,15 @@
 
     <dependencies>
         <dependency>
+            <groupId>io.undertow</groupId>
+            <artifactId>undertow-core</artifactId>
+            <version>${undertow.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot-api</artifactId>
-            <version>26.1.1-R0.1-SNAPSHOT</version>
+            <version>1.21.11-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

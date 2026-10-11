@@ -44,7 +44,7 @@ public class Commands implements CommandExecutor {
                     return true;
                 }
                 sender.sendMessage("Stopping EzWebserver...");
-                EzWebserver.server.stop(0);
+                EzWebserver.server.stop();
                 EzWebserver.server = null;
                 sender.sendMessage("EzWebserver has been stopped.");
             }
